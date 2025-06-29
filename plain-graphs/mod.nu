@@ -102,13 +102,10 @@ def load-graph [
 
 def parse-value [
   --invert (-i)
-]: any -> record {
+]: oneof<string, record> -> record {
   mut value = $in
   if ($value | describe -d).type == string {
     $value = $value | from toml
-  }
-  if ($value | describe -d).type != record {
-    make error { msg: 'value is invalid' }
   }
   if $invert {
     $value | items {|node, edges|
@@ -121,8 +118,8 @@ def parse-value [
 def merge-graph [
   --invert (-i)
   --replace (-r)
-  ...value: any
-]: path -> list {
+  ...value: oneof<string, record>
+]: path -> record {
   let data = $in | open
   if ($data | describe -d).type != record {
     error make { msg: 'file does not contain valid graph data' }
@@ -153,7 +150,7 @@ export def main [
   --no-rules (-R) # skip applying rules
   --print (-p) # print result to stdout instead of saving
   data: path
-  ...value: any
+  ...value: oneof<string, record>
 ] {
   if ($value | is-empty) {
     $data | load-graph --invert=$invert --no-rules=$no_rules

@@ -4,7 +4,7 @@ Handle graph data stored in plain text formats.
 ## Usage
 Can be used as a command
 ```nu
-^plain-graphs/mod.nu $file ...$values
+^plain-graphs $file ...$values
 ```
 or can be included as a module
 ```nu
@@ -53,5 +53,6 @@ mark = true
 [b]
 ```
 ```nu
+use plain-graphs/
 (plain-graphs $file | get b.mark) == false
 ```

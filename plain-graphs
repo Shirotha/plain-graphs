@@ -1,0 +1,15 @@
+#!/usr/bin/env nu
+
+use mod.nu
+
+# handle graph data stored in plain text formats
+def main [
+  --invert (-i) # invert edges in input value and output
+  --replace (-r) # instead of merging conflicts, replace existing nodes
+  --no-rules (-R) # skip applying rules
+  --print (-p) # print result to stdout instead of saving
+  data: path # data file
+  ...value: string # inline toml data to merge into data
+]: [nothing -> nothing, nothing -> record] {
+  mod --invert=$invert --replace=$replace --no-rules=$no_rules --print=$print $data ...$value
+}

@@ -30,7 +30,7 @@ def merge-nodes [
     }
 }
 
-# interpret iput value as rules list
+# interpret input value as rules list
 export def parse-rules [
 ]: any -> list<record> {
   if ($in | describe -d).type != list { return [] }
@@ -110,7 +110,7 @@ export def parse-graph [
   } | flatten | into record
 }
 
-# invert edge diretion of input graph
+# invert edge direction of input graph
 export def invert-graph [
 ]: record -> record {
   items {|node, edges|

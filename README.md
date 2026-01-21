@@ -35,7 +35,7 @@ c = [1, 2, 3]
 a = {x = 1, y = -1}
 ```
 ## Rules
-Rules allow to normalize the data in a declaritive way.
+Rules allow to normalize the data in a declarative way.
 They are stored in the `_rules: list<record>` key.
 
 ### Filters

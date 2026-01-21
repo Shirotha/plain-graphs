@@ -1,3 +1,10 @@
+# apply block to the input only if cond is true
+def opt [
+  cond: bool
+  block: closure
+]: any -> any {
+  if $cond { do $block $in } else { $in }
+}
 # like built-in upsert but passes node value to the closure
 def upsert-node [
   node: string
@@ -81,6 +88,38 @@ export def apply-rules [
   }
 }
 
+# parse record as graph
+export def parse-graph [
+  rules: list<record> = [] # list of rules to apply to the graph
+]: record -> record {
+  items {|name, value|
+    $value | match ($value | describe -d).type {
+      'record' => {
+        apply-rules $name $rules | [{$name: $in}]
+      }
+      'list' => {
+        enumerate | each {
+          let subname = $"($name).($in.index)"
+          $in.item
+            | apply-rules $name $rules
+            | {$subname: $in}
+        }
+      }
+      _ => { [] }
+    }
+  } | flatten | into record
+}
+
+# invert edge diretion of input graph
+export def invert-graph [
+]: record -> record {
+  items {|node, edges|
+    $edges
+      | items {|edge, value| [$edge {$node: $value}] }
+      | into record
+  } | reduce {|a, b| $a | merge-nodes $b }
+}
+
 # load graph data from input file
 export def load-graph [
   --invert (-i) # invert edges in input value and output
@@ -90,58 +129,24 @@ export def load-graph [
   if ($data | describe -d).type != record {
     error make { msg: 'file does not contain valid graph data' }
   }
-  let rules = if $no_rules { [] } else {
-    $data.rules? | default [] | parse-rules
+  let rules = [] | opt (not $no_rules) {
+    $data._rules?
+      | default []
+      | parse-rules
   }
-  if $invert {
-    mut result = {}
-    for node in ($data | transpose name edges) {
-      if ($node.edges | describe -d).type == record {
-        for edge in ($node.edges | transpose name value) {
-          $result = (
-            $result | upsert-node $edge.name {|old|
-              $old
-                | default {}
-                | insert $node.name $edge.value
-            }
-          )
-        }
-      }
-    }
-    $result
-  } else {
-    $data
-      | items {|node, edges|
-        if ($edges | describe -d).type != record { return }
-
-        let edges = $edges | apply-rules $node $rules
-        if $edges != null { [$node $edges] }
-      }
-      | compact
-      | into record
-  }
+  $data
+    | reject -o _rules
+    | parse-graph $rules
+    | opt $invert { invert-graph }
 }
 
 # interpret input value as graph data
 export def parse-value [
   --invert (-i) # invert edges in input value and output
 ]: oneof<string, record> -> record {
-  mut value = $in
-  if ($value | describe -d).type == string {
-    $value = $value | from toml
-  }
-  if $invert {
-    $value
-      | items {|node, edges|
-        if ($edges | describe -d).type != record { return }
-
-        $edges
-          | items {|edge, value| [$edge {$node: $value}] }
-          | into record
-      }
-      | compact
-      | reduce {|a, b| $a | merge-nodes $b }
-  } else { $value }
+  opt (($in | describe -d).type == string) { from toml }
+    | parse-graph
+    | opt $invert { invert-graph }
 }
 
 # merge graph stored in input file with given values

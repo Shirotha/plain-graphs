@@ -24,10 +24,19 @@ The values of the inner dictionary can be arbitrary data and is not touched by t
 ```toml
 # edge from the 'a' node to the 'b' node with a string value
 a.b = "value"
+
+# use table notation to define multiple edges at once
+[b]
+a = 42
+c = [1, 2, 3]
+
+# use lists to store node groups (the key will be 'c.0' here)
+[[cs]]
+a = {x = 1, y = -1}
 ```
 ## Rules
 Rules allow to normalize the data in a declaritive way.
-They are stored in the `rules: list<record>` key.
+They are stored in the `_rules: list<record>` key.
 
 ### Filters
 Select which nodes are affected.
@@ -35,6 +44,9 @@ Select which nodes are affected.
 - `not-from: one_of<string, list<string>>`: excluded node names (default: none)
 - `to: one_of<string, list<string>>`: required connections (default: none)
 - `not-to: one_of<string, list<string>>`: disqualifying connections (default: none)
+
+> [!NOTE]
+> Note groups will be matched using their declared name (without the index)
 
 ### Actions
 Changes applied to matching nodes.
@@ -44,7 +56,7 @@ Changes applied to matching nodes.
 
 ## Examples
 ```toml
-[[rules]]
+[[_rules]]
 default.mark = false
 
 [a]

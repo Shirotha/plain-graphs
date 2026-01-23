@@ -76,11 +76,12 @@ export def apply-rules [
   node: string # node name
   rules: list<record> # list of rules
 ]: record -> record {
-  let edges = $in
+  let type = $in | if '_type' in $in { $in._type } else { $node }
+  let edges = $in | reject -o '_type'
   $rules | reduce --fold $edges {|rule, edges|
     if $edges == null { return }
-    if 'from' in $rule and not ($node in $rule.from) { return $edges }
-    if 'not-from' in $rule and $node in $rule.from { return $edges }
+    if 'from' in $rule and not ($type in $rule.from) { return $edges }
+    if 'not-from' in $rule and $type in $rule.from { return $edges }
     if 'to' in $rule and not ($edges | columns | all { $in in $rule.to }) { return $edges }
     if 'not-to' in $rule and ($edges | columns | any { $in in $rule.not-to }) { return $edges }
     if ($rule.skip? | default false) { return }

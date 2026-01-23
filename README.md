@@ -21,6 +21,8 @@ Any format with a `from *` and `to *` (only for editing) sub-command that produc
 Graphs are stored by declaring edges as nested dictionaries.
 The values of the inner dictionary can be arbitrary data and is not touched by this tool.
 
+Keys starting with '_' are reserved.
+
 ```toml
 # edge from the 'a' node to the 'b' node with a string value
 a.b = "value"
@@ -40,13 +42,17 @@ They are stored in the `_rules: list<record>` key.
 
 ### Filters
 Select which nodes are affected.
-- `from: one_of<string, list<string>>`: included node names (default: all)
-- `not-from: one_of<string, list<string>>`: excluded node names (default: none)
+- `from: one_of<string, list<string>>`: included node types (default: all)
+- `not-from: one_of<string, list<string>>`: excluded node types (default: none)
 - `to: one_of<string, list<string>>`: required connections (default: none)
 - `not-to: one_of<string, list<string>>`: disqualifying connections (default: none)
 
+### Node Types
+By default the type of each node is its name.
+This can be overridden by setting `<node>._type = "<type>"`.
+
 > [!NOTE]
-> Note groups will be matched using their declared name (without the index)
+> The type of note groups is their declared name without the index.
 
 ### Actions
 Changes applied to matching nodes.

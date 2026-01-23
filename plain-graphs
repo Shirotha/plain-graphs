@@ -11,5 +11,7 @@ def main [
   data: path # data file
   ...value: string # inline toml data to merge into data
 ]: [nothing -> nothing, nothing -> record] {
-  mod --invert=$invert --replace=$replace --no-rules=$no_rules --print=$print $data ...$value
+  $data
+    | mod --invert=$invert --replace=$replace --no-rules=$no_rules --print=$print ...$value
+    | if ($in | describe -d).type == "record" { to json } else { $in }
 }

@@ -79,7 +79,7 @@ export def apply-rules [
   let edges = $in
   $rules | reduce --fold $edges {|rule, edges|
     if $edges == null { return }
-    if 'from' in $rule and not $node in $rule.from { return $edges }
+    if 'from' in $rule and not ($node in $rule.from) { return $edges }
     if 'not-from' in $rule and $node in $rule.from { return $edges }
     if 'to' in $rule and not ($edges | columns | all { $in in $rule.to }) { return $edges }
     if 'not-to' in $rule and ($edges | columns | any { $in in $rule.not-to }) { return $edges }
@@ -188,17 +188,16 @@ export def main [
   --replace (-r) # instead of merging conflicts, replace existing nodes
   --no-rules (-R) # skip applying rules
   --print (-p) # print result to stdout instead of saving
-  data: path # data file
   ...value: oneof<string, record> # inline toml data or record to merge into data
-]: [nothing -> nothing, nothing -> record] {
+]: [path -> nothing, path -> record] {
   if ($value | is-empty) {
-    $data | load-graph --invert=$invert --no-rules=$no_rules
+    load-graph --invert=$invert --no-rules=$no_rules
   } else {
-    let result = $data | merge-graph --invert=$invert --replace=$replace ...$value
-    if $print {
+    let result = $in | merge-graph --invert=$invert --replace=$replace ...$value
+    $in | if $print {
       $result
     } else {
-      $result | save --force $data
+      $result | save --force $in
     }
   }
 }

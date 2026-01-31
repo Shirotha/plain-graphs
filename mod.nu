@@ -94,6 +94,15 @@ export def parse-graph [
   rules: list<record> = [] # list of rules to apply to the graph
 ]: record -> record {
   items {|name, value|
+    if $name == "_type" {
+      return (
+        $value | items {|type, nodes|
+          $nodes | items {|name, value|
+            $value | apply-rules $type $rules | {$name: $in}
+          }
+        } | flatten
+      )
+    }
     $value | match ($value | describe -d).type {
       'record' => {
         apply-rules $name $rules | [{$name: $in}]

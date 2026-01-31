@@ -54,6 +54,10 @@ This can be overridden by setting `<node>._type = "<type>"`.
 > [!NOTE]
 > The type of note groups is their declared name without the index.
 
+> [!TIP]
+> Use namespaces to specify the `_type` of multiple nodes at once
+> by placing them in `_type.<type>`
+
 ### Actions
 Changes applied to matching nodes.
 - `default: record`: add connections if not already present
